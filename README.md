@@ -1,11 +1,11 @@
 # scripty
 
+## scripty
+
 [![Crates.io](https://img.shields.io/crates/v/scripty.svg)](https://crates.io/crates/scripty)
 [![Documentation](https://docs.rs/scripty/badge.svg)](https://docs.rs/scripty)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust Version](https://img.shields.io/badge/rust-1.87.0%2B-blue.svg)](https://github.com/rust-lang/rust)
-
-## scripty
 
 **Scripty** - A simple and intuitive library that makes running shell commands and file operations
 easy and visible.
@@ -565,8 +565,8 @@ println!("Stage 2 output: {}", stage2);
 
 ### Contributing
 
-We welcome contributions! Please see our
-[GitHub repository](https://github.com/h-zasu/scripty) for more information.
+We welcome contributions! Please see our [GitHub repository](https://github.com/h-zasu/scripty) for
+more information.
 
 ### License
 

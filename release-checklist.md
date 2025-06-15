@@ -53,6 +53,7 @@
 ## Version Bumping for Next Release
 
 After release, bump version for development:
+
 1. Update version in Cargo.toml to next version (e.g., 0.4.0-dev)
 2. Add new "Unreleased" section to CHANGELOG.md
 3. Commit: `git commit -m "chore: bump version for development"`
