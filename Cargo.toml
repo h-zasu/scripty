@@ -12,6 +12,8 @@ description = "Scripty - your Rust command toolkit for easy command execution an
 repository = "https://github.com/h-zasu/scripty"
 homepage = "https://github.com/h-zasu/scripty"
 categories = ["command-line-interface", "command-line-utilities", "development-tools", "filesystem"]
+keywords = ["shell", "command", "pipeline", "scripting", "cli"]
+readme = "README.md"
 
 [dependencies]
 anstyle = "1.0.7"
