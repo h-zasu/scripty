@@ -11,6 +11,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Nothing yet
 
+## [0.3.3] - 2025-06-15
+
+### Added
+
+- Enhanced `00_basic.rs` example with comprehensive demonstrations of basic usage
+- Added `keywords` and `readme` fields to Cargo.toml for better crates.io discoverability
+
+### Changed
+
+- Improved example structure with clear sections for different functionality
+
 ## [0.3.2] - 2025-06-15
 
 ### Added

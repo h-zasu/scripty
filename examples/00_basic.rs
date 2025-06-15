@@ -109,7 +109,7 @@ fn environment_and_directory() -> Result<()> {
     // Set multiple environment variables
     cmd!("sh", "-c", "echo Name: $NAME, Version: $VERSION")
         .env("NAME", "scripty")
-        .env("VERSION", "0.3.2")
+        .env("VERSION", "0.3.3")
         .run()?;
 
     // Change working directory

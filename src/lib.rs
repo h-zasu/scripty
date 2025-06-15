@@ -32,7 +32,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! scripty = "0.3.2"
+//! scripty = "0.3.3"
 //! ```
 //!
 //! ## Platform Support
