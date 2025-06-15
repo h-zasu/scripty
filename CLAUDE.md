@@ -3,6 +3,10 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this
 repository.
 
+## 🤔 Thinking Mode
+
+Always use thinking mode when working in this repository.
+
 ## 🔴 CRITICAL: Implementation Principle
 
 **Keep implementations minimal and focused on the specific request.**
