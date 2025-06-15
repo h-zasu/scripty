@@ -1,0 +1,30 @@
+# Configuration for taplo TOML formatter
+
+[formatting]
+# Use 2 spaces for indentation (consistent with Rust style)
+indent_string = "  "
+
+# Maximum column width
+column_width = 100
+
+# Always use inline tables for short entries
+inline_table_max_width = 80
+
+# Array formatting
+array_auto_expand = true
+array_auto_collapse = true
+array_trailing_comma = true
+
+# Table formatting
+reorder_keys = false  # Preserve key order
+align_entries = false # Don't align = signs
+
+# Other formatting options
+allowed_blank_lines = 1
+trailing_newline = true
+crlf = false            # Use LF line endings
+
+# Include/exclude patterns
+[[rule]]
+include = ["**/*.toml"]
+exclude = ["target/**/*.toml"]
