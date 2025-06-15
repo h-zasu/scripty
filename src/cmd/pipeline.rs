@@ -36,7 +36,8 @@ impl PipelineHandle {
                 use std::io::Read;
                 let mut output = Vec::new();
                 let mut reader = BufReader::new(stdout);
-                reader.read_to_end(&mut output)
+                reader
+                    .read_to_end(&mut output)
                     .map_err(|e| Error::io("Failed to read stdout", e))?;
 
                 // Wait for the process to complete
@@ -883,7 +884,8 @@ impl Pipeline {
             if let Some(stdout) = spawn.stdout {
                 let mut output = Vec::new();
                 let mut reader = BufReader::new(stdout);
-                reader.read_to_end(&mut output)
+                reader
+                    .read_to_end(&mut output)
                     .map_err(|e| Error::io("Failed to read stdout", e))?;
 
                 // Wait for input thread to complete if exists
