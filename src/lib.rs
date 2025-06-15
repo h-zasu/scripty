@@ -32,7 +32,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! scripty = "0.3.1"
+//! scripty = "0.3.2"
 //! ```
 //!
 //! ## Platform Support
@@ -46,6 +46,25 @@
 //! ## Requirements
 //!
 //! - **Rust 1.87.0 or later** - Uses native `std::io::pipe` for optimal pipeline performance
+//!
+//! ## Security Considerations
+//!
+//! **⚠️ Warning**: This library executes system commands with the privileges of the current process.
+//!
+//! - **Never pass untrusted user input directly to commands**
+//! - Validate and sanitize all inputs before use
+//! - Be aware of command injection risks when constructing command arguments dynamically
+//! - Consider using allowlists for command names and arguments when dealing with user input
+//!
+//! Example of unsafe usage:
+//! ```no_run
+//! # use scripty::*;
+//! # fn get_user_input() -> String { String::new() }
+//! // DON'T DO THIS with untrusted input!
+//! let user_input = get_user_input();
+//! // cmd!("sh", "-c", user_input).run()?; // Dangerous!
+//! # Ok::<(), Box<dyn std::error::Error>>(())
+//! ```
 //!
 //! ## Basic Usage
 //!
@@ -272,16 +291,16 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 //!
-//! #### Advanced I/O Control
+//! #### Advanced I/O Control with spawn_io_* Methods
 //!
-//! For complex I/O scenarios, use the spawn methods:
+//! For complex I/O scenarios, use the spawn methods for non-blocking control:
 //!
 //! ```no_run
 //! use scripty::*;
 //! use std::io::{BufRead, BufReader, Write};
 //! use std::thread;
 //!
-//! // Full I/O control
+//! // Full I/O control with spawn_io_all
 //! let spawn = cmd!("sort").spawn_io_all()?;
 //!
 //! // Handle input in separate thread
@@ -302,6 +321,64 @@
 //! }
 //!
 //! spawn.handle.wait()?;
+//! # Ok::<(), Box<dyn std::error::Error>>(())
+//! ```
+//!
+//! ##### spawn_io_* Method Variants
+//!
+//! Choose the right spawn method for your needs:
+//!
+//! ```no_run
+//! use scripty::*;
+//! use std::io::Write;
+//!
+//! // spawn_io_in - Control stdin only (common for sending data)
+//! let (handle, stdin) = cmd!("grep", "pattern").spawn_io_in()?;
+//! if let Some(mut stdin) = stdin {
+//!     writeln!(stdin, "test line with pattern")?;
+//!     writeln!(stdin, "another line")?;
+//!     drop(stdin); // Close to signal EOF
+//! }
+//! handle.wait()?;
+//!
+//! // spawn_io_out - Control stdout only (common for reading output)
+//! let (handle, stdout) = cmd!("ls", "-la").spawn_io_out()?;
+//! if let Some(stdout) = stdout {
+//!     use std::io::Read;
+//!     let mut output = String::new();
+//!     stdout.take(100).read_to_string(&mut output)?;
+//!     println!("First 100 bytes: {}", output);
+//! }
+//! handle.wait()?;
+//!
+//! // spawn_io_in_out - Control both stdin and stdout (interactive commands)
+//! let (handle, stdin, stdout) = cmd!("sort", "-n").spawn_io_in_out()?;
+//! // Send numbers to sort
+//! if let Some(mut stdin) = stdin {
+//!     writeln!(stdin, "42")?;
+//!     writeln!(stdin, "7")?;
+//!     writeln!(stdin, "100")?;
+//!     drop(stdin);
+//! }
+//! // Read sorted output
+//! if let Some(stdout) = stdout {
+//!     use std::io::BufRead;
+//!     let reader = std::io::BufReader::new(stdout);
+//!     for line in reader.lines() {
+//!         println!("Sorted: {}", line?);
+//!     }
+//! }
+//! handle.wait()?;
+//!
+//! // spawn_io_err - Control stderr only (error monitoring)
+//! let (handle, stderr) = cmd!("command-with-errors").spawn_io_err()?;
+//! if let Some(mut stderr) = stderr {
+//!     use std::io::Read;
+//!     let mut errors = String::new();
+//!     stderr.read_to_string(&mut errors)?;
+//!     eprintln!("Errors: {}", errors);
+//! }
+//! handle.wait()?;
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 //!

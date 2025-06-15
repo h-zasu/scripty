@@ -58,6 +58,15 @@ impl Error {
             source: None,
         }
     }
+
+    /// Creates an error for a poisoned mutex.
+    #[allow(dead_code)]
+    pub(crate) fn mutex_poisoned() -> Self {
+        Error {
+            message: "Mutex was poisoned by a panicked thread".to_string(),
+            source: None,
+        }
+    }
 }
 
 impl std::fmt::Display for Error {

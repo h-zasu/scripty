@@ -295,13 +295,18 @@ impl Cmd {
         self.into_pipeline().spawn_io_out_err()
     }
 
-    /// Quotes an argument for display if it contains characters that affect readability.  
+    /// Quotes an argument for display purposes only if it contains characters that affect readability.
     ///
-    /// This function focuses on readability rather than shell compatibility:
+    /// **IMPORTANT**: This function is for visual display only and should NOT be used for
+    /// shell escaping or security purposes. It focuses on readability rather than shell compatibility.
+    ///
+    /// Display behavior:
     /// - Arguments with spaces or control characters: wrapped in single quotes with escaping
     /// - Arguments with single quotes: wrapped in double quotes with escaping
     /// - Empty arguments: displayed as empty quotes
     /// - Safe arguments: displayed as-is
+    ///
+    /// This is used internally for the command echo feature to show what commands are being executed.
     pub(crate) fn quote_argument(arg: &OsStr) -> String {
         let arg_str = arg.to_string_lossy();
 

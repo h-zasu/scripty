@@ -614,7 +614,9 @@ impl Pipeline {
 
         // Wait for input thread to complete if exists
         if let Some(handle) = input_handle {
-            let _ = handle.join();
+            if handle.join().is_err() {
+                eprintln!("Warning: Input thread panicked");
+            }
         }
 
         spawn.handle.wait()
@@ -656,7 +658,9 @@ impl Pipeline {
 
         // Wait for input thread to complete if exists
         if let Some(handle) = input_handle {
-            let _ = handle.join();
+            if handle.join().is_err() {
+                eprintln!("Warning: Input thread panicked");
+            }
         }
 
         spawn.handle.wait()
@@ -699,8 +703,17 @@ impl Pipeline {
             let writer_clone = Arc::clone(&writer);
             thread::spawn(move || {
                 use std::io::copy;
-                if let Ok(mut writer_guard) = writer_clone.lock() {
-                    let _ = copy(&mut BufReader::new(stdout), &mut *writer_guard);
+                match writer_clone.lock() {
+                    Ok(mut writer_guard) => {
+                        if let Err(e) = copy(&mut BufReader::new(stdout), &mut *writer_guard) {
+                            eprintln!("Warning: Failed to copy stdout to writer: {}", e);
+                        }
+                    }
+                    Err(_) => {
+                        eprintln!(
+                            "Warning: Failed to acquire writer lock for stdout (mutex poisoned)"
+                        );
+                    }
                 }
             })
         });
@@ -709,23 +722,38 @@ impl Pipeline {
             let writer_clone = Arc::clone(&writer);
             thread::spawn(move || {
                 use std::io::copy;
-                if let Ok(mut writer_guard) = writer_clone.lock() {
-                    let _ = copy(&mut BufReader::new(stderr), &mut *writer_guard);
+                match writer_clone.lock() {
+                    Ok(mut writer_guard) => {
+                        if let Err(e) = copy(&mut BufReader::new(stderr), &mut *writer_guard) {
+                            eprintln!("Warning: Failed to copy stderr to writer: {}", e);
+                        }
+                    }
+                    Err(_) => {
+                        eprintln!(
+                            "Warning: Failed to acquire writer lock for stderr (mutex poisoned)"
+                        );
+                    }
                 }
             })
         });
 
         // Wait for input thread to complete if exists
         if let Some(handle) = input_handle {
-            let _ = handle.join();
+            if handle.join().is_err() {
+                eprintln!("Warning: Input thread panicked");
+            }
         }
 
         // Wait for output threads to complete
         if let Some(handle) = stdout_handle {
-            let _ = handle.join();
+            if handle.join().is_err() {
+                eprintln!("Warning: Stdout thread panicked");
+            }
         }
         if let Some(handle) = stderr_handle {
-            let _ = handle.join();
+            if handle.join().is_err() {
+                eprintln!("Warning: Stderr thread panicked");
+            }
         }
 
         spawn.handle.wait()
@@ -813,8 +841,17 @@ impl Pipeline {
             thread::spawn(move || {
                 use std::io::copy;
                 let mut reader = BufReader::new(stdout);
-                if let Ok(mut writer) = writer.lock() {
-                    let _ = copy(&mut reader, &mut *writer);
+                match writer.lock() {
+                    Ok(mut writer) => {
+                        if let Err(e) = copy(&mut reader, &mut *writer) {
+                            eprintln!("Warning: Failed to copy stdout to writer: {}", e);
+                        }
+                    }
+                    Err(_) => {
+                        eprintln!(
+                            "Warning: Failed to acquire writer lock for stdout (mutex poisoned)"
+                        );
+                    }
                 }
             })
         });
@@ -825,18 +862,31 @@ impl Pipeline {
             thread::spawn(move || {
                 use std::io::copy;
                 let mut reader = BufReader::new(stderr);
-                if let Ok(mut writer) = writer.lock() {
-                    let _ = copy(&mut reader, &mut *writer);
+                match writer.lock() {
+                    Ok(mut writer) => {
+                        if let Err(e) = copy(&mut reader, &mut *writer) {
+                            eprintln!("Warning: Failed to copy stderr to writer: {}", e);
+                        }
+                    }
+                    Err(_) => {
+                        eprintln!(
+                            "Warning: Failed to acquire writer lock for stderr (mutex poisoned)"
+                        );
+                    }
                 }
             })
         });
 
         // Wait for all threads to complete
         if let Some(handle) = stdout_handle {
-            let _ = handle.join();
+            if handle.join().is_err() {
+                eprintln!("Warning: Stdout thread panicked");
+            }
         }
         if let Some(handle) = stderr_handle {
-            let _ = handle.join();
+            if handle.join().is_err() {
+                eprintln!("Warning: Stderr thread panicked");
+            }
         }
 
         spawn.handle.wait()
@@ -890,7 +940,9 @@ impl Pipeline {
 
                 // Wait for input thread to complete if exists
                 if let Some(handle) = input_handle {
-                    let _ = handle.join();
+                    if handle.join().is_err() {
+                        eprintln!("Warning: Input thread panicked");
+                    }
                 }
 
                 spawn.handle.wait()?;
@@ -898,7 +950,9 @@ impl Pipeline {
             } else {
                 // Wait for input thread to complete if exists
                 if let Some(handle) = input_handle {
-                    let _ = handle.join();
+                    if handle.join().is_err() {
+                        eprintln!("Warning: Input thread panicked");
+                    }
                 }
 
                 spawn.handle.wait()?;
@@ -935,7 +989,9 @@ impl Pipeline {
 
             // Wait for input thread to complete if exists
             if let Some(handle) = input_handle {
-                let _ = handle.join();
+                if handle.join().is_err() {
+                    eprintln!("Warning: Input thread panicked");
+                }
             }
 
             spawn.handle.wait()?;
