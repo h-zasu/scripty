@@ -11,6 +11,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Nothing yet
 
+## [0.3.2] - 2025-06-15
+
+### Added
+
+- Security considerations section in README.md and lib.rs documentation
+- Comprehensive spawn_io_* method examples covering all 7 I/O patterns
+- Warning messages for thread panics and mutex poisoning errors
+
+### Changed
+
+- Improved error handling for thread join failures and mutex lock errors
+- Enhanced documentation for `quote_argument` to clarify it's for display purposes only
+
+### Security
+
+- Added warnings about command injection risks when using untrusted user input
+- Documented safe practices for handling user-provided command arguments
+
 ## [0.3.1] - 2025-06-08
 
 ### Changed
