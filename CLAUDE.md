@@ -3,15 +3,6 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this
 repository.
 
-## 🔴 CRITICAL: Confirmation Principle
-
-**ALWAYS explain your implementation plan first and get confirmation before making any changes.**
-
-- Present a clear overview of what you intend to do
-- List the files that will be affected
-- Describe the approach you will take
-- Wait for user approval before proceeding with implementation
-
 ## 🔴 CRITICAL: Implementation Principle
 
 **Keep implementations minimal and focused on the specific request.**
