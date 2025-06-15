@@ -49,9 +49,7 @@ fn simple_execution() -> Result<()> {
     cmd!("echo", "Hello from scripty!").run()?;
 
     // Using the builder pattern
-    cmd!("echo")
-        .arg("Builder pattern example")
-        .run()?;
+    cmd!("echo").arg("Builder pattern example").run()?;
 
     Ok(())
 }
@@ -113,9 +111,7 @@ fn environment_and_directory() -> Result<()> {
         .run()?;
 
     // Change working directory
-    let pwd = cmd!("pwd")
-        .current_dir("/tmp")
-        .output()?;
+    let pwd = cmd!("pwd").current_dir("/tmp").output()?;
     println!("   Working directory: {}", pwd.trim());
 
     Ok(())
