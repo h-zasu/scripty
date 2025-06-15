@@ -91,7 +91,7 @@ fn command_arguments() -> Result<()> {
 
     // Using args() for multiple arguments
     cmd!("echo")
-        .args(&["multiple", "args", "at", "once"])
+        .args(["multiple", "args", "at", "once"])
         .run()?;
 
     Ok(())
