@@ -11,6 +11,14 @@ repository.
 - Limit changes to what is sufficient to solve the problem
 - Do not add features or improvements not explicitly requested
 
+## 🔴 CRITICAL: Branch-Based Development
+
+**NEVER push directly to main branch.**
+
+- Always create feature branches for changes
+- Use Pull Requests for all merges to main
+- See CONTRIBUTING.md for detailed workflow
+
 ## Essential Development Commands
 
 ```bash
