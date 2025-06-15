@@ -10,16 +10,12 @@ impl PipelineHandle {
     /// Wait for all processes in the pipeline to complete.
     pub fn wait(self) -> Result<(), Error> {
         for mut child in self.children {
-            let status = child.wait().map_err(|e| Error {
-                message: "Failed to wait for child process".to_string(),
-                source: Some(e),
-            })?;
+            let status = child
+                .wait()
+                .map_err(|e| Error::io("Failed to wait for child process", e))?;
 
             if !status.success() {
-                return Err(Error {
-                    message: format!("Command failed with exit code: {:?}", status.code()),
-                    source: None,
-                });
+                return Err(Error::exit_code(status.code()));
             }
         }
         Ok(())
@@ -40,27 +36,21 @@ impl PipelineHandle {
                 use std::io::Read;
                 let mut output = Vec::new();
                 let mut reader = BufReader::new(stdout);
-                reader.read_to_end(&mut output).map_err(|e| Error {
-                    message: "Failed to read stdout".to_string(),
-                    source: Some(e),
-                })?;
+                reader.read_to_end(&mut output)
+                    .map_err(|e| Error::io("Failed to read stdout", e))?;
 
                 // Wait for the process to complete
                 for mut child in self.children {
-                    child.wait().map_err(|e| Error {
-                        message: "Failed to wait for child process".to_string(),
-                        source: Some(e),
-                    })?;
+                    child
+                        .wait()
+                        .map_err(|e| Error::io("Failed to wait for child process", e))?;
                 }
 
                 return Ok(output);
             }
         }
 
-        Err(Error {
-            message: "No stdout available to read from".to_string(),
-            source: None,
-        })
+        Err(Error::no_stdout())
     }
 }
 
@@ -160,9 +150,11 @@ impl Pipeline {
             std_cmd.stdout(Stdio::piped());
             std_cmd.stderr(Stdio::piped());
 
-            let mut child = std_cmd.spawn().map_err(|e| Error {
-                message: format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
-                source: Some(e),
+            let mut child = std_cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
+                    e,
+                )
             })?;
 
             let stdin = child.stdin.take();
@@ -214,30 +206,23 @@ impl Pipeline {
                 let next_pipe_mode = self.connections[i + 1].1;
                 match next_pipe_mode {
                     PipeMode::Stdout => {
-                        let (reader, writer) = std::io::pipe().map_err(|e| Error {
-                            message: "Failed to create stdout pipe".to_string(),
-                            source: Some(e),
-                        })?;
+                        let (reader, writer) = std::io::pipe()
+                            .map_err(|e| Error::io("Failed to create stdout pipe", e))?;
                         cmd.stdout(Stdio::from(writer));
                         prev_reader = Some(reader);
                     }
                     PipeMode::Stderr => {
-                        let (reader, writer) = std::io::pipe().map_err(|e| Error {
-                            message: "Failed to create stderr pipe".to_string(),
-                            source: Some(e),
-                        })?;
+                        let (reader, writer) = std::io::pipe()
+                            .map_err(|e| Error::io("Failed to create stderr pipe", e))?;
                         cmd.stderr(Stdio::from(writer));
                         prev_reader = Some(reader);
                     }
                     PipeMode::Both => {
-                        let (reader, writer) = std::io::pipe().map_err(|e| Error {
-                            message: "Failed to create combined pipe".to_string(),
-                            source: Some(e),
-                        })?;
-                        let writer_clone = writer.try_clone().map_err(|e| Error {
-                            message: "Failed to clone pipe writer".to_string(),
-                            source: Some(e),
-                        })?;
+                        let (reader, writer) = std::io::pipe()
+                            .map_err(|e| Error::io("Failed to create combined pipe", e))?;
+                        let writer_clone = writer
+                            .try_clone()
+                            .map_err(|e| Error::io("Failed to clone pipe writer", e))?;
                         cmd.stdout(Stdio::from(writer));
                         cmd.stderr(Stdio::from(writer_clone));
                         prev_reader = Some(reader);
@@ -245,12 +230,14 @@ impl Pipeline {
                 }
             }
 
-            let mut child = cmd.spawn().map_err(|e| Error {
-                message: format!(
-                    "Failed to spawn command: {}",
-                    cmd_def.program.to_string_lossy()
-                ),
-                source: Some(e),
+            let mut child = cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!(
+                        "Failed to spawn command: {}",
+                        cmd_def.program.to_string_lossy()
+                    ),
+                    e,
+                )
             })?;
 
             // Capture I/O handles
@@ -298,9 +285,11 @@ impl Pipeline {
             // Only set up stdin as piped - let stdout/stderr inherit
             std_cmd.stdin(Stdio::piped());
 
-            let mut child = std_cmd.spawn().map_err(|e| Error {
-                message: format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
-                source: Some(e),
+            let mut child = std_cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
+                    e,
+                )
             })?;
 
             let stdin = child.stdin.take();
@@ -353,9 +342,11 @@ impl Pipeline {
             std_cmd.stdin(Stdio::piped());
             std_cmd.stdout(Stdio::piped());
 
-            let mut child = std_cmd.spawn().map_err(|e| Error {
-                message: format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
-                source: Some(e),
+            let mut child = std_cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
+                    e,
+                )
             })?;
 
             let stdin = child.stdin.take();
@@ -410,9 +401,11 @@ impl Pipeline {
             std_cmd.stdin(Stdio::piped());
             std_cmd.stderr(Stdio::piped());
 
-            let mut child = std_cmd.spawn().map_err(|e| Error {
-                message: format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
-                source: Some(e),
+            let mut child = std_cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
+                    e,
+                )
             })?;
 
             let stdin = child.stdin.take();
@@ -457,9 +450,11 @@ impl Pipeline {
             // Only set up stdout as piped - let stdin/stderr inherit
             std_cmd.stdout(Stdio::piped());
 
-            let mut child = std_cmd.spawn().map_err(|e| Error {
-                message: format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
-                source: Some(e),
+            let mut child = std_cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
+                    e,
+                )
             })?;
 
             let stdout = child.stdout.take();
@@ -502,9 +497,11 @@ impl Pipeline {
             // Only set up stderr as piped - let stdin/stdout inherit
             std_cmd.stderr(Stdio::piped());
 
-            let mut child = std_cmd.spawn().map_err(|e| Error {
-                message: format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
-                source: Some(e),
+            let mut child = std_cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
+                    e,
+                )
             })?;
 
             let stderr = child.stderr.take();
@@ -556,9 +553,11 @@ impl Pipeline {
             std_cmd.stdout(Stdio::piped());
             std_cmd.stderr(Stdio::piped());
 
-            let mut child = std_cmd.spawn().map_err(|e| Error {
-                message: format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
-                source: Some(e),
+            let mut child = std_cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
+                    e,
+                )
             })?;
 
             let stdout = child.stdout.take();
@@ -608,10 +607,8 @@ impl Pipeline {
         // Handle stdout in current thread
         if let Some(stdout) = spawn.stdout {
             use std::io::copy;
-            copy(&mut BufReader::new(stdout), &mut writer).map_err(|e| Error {
-                message: "Failed to copy pipeline stdout to writer".to_string(),
-                source: Some(e),
-            })?;
+            copy(&mut BufReader::new(stdout), &mut writer)
+                .map_err(|e| Error::io("Failed to copy pipeline stdout to writer", e))?;
         }
 
         // Wait for input thread to complete if exists
@@ -652,10 +649,8 @@ impl Pipeline {
         // Handle stderr in current thread
         if let Some(stderr) = spawn.stderr {
             use std::io::copy;
-            copy(&mut BufReader::new(stderr), &mut writer).map_err(|e| Error {
-                message: "Failed to copy pipeline stderr to writer".to_string(),
-                source: Some(e),
-            })?;
+            copy(&mut BufReader::new(stderr), &mut writer)
+                .map_err(|e| Error::io("Failed to copy pipeline stderr to writer", e))?;
         }
 
         // Wait for input thread to complete if exists
@@ -755,10 +750,8 @@ impl Pipeline {
         // Handle output in current thread
         if let Some(stdout) = spawn.stdout {
             use std::io::copy;
-            copy(&mut BufReader::new(stdout), &mut writer).map_err(|e| Error {
-                message: "Failed to copy pipeline output to writer".to_string(),
-                source: Some(e),
-            })?;
+            copy(&mut BufReader::new(stdout), &mut writer)
+                .map_err(|e| Error::io("Failed to copy pipeline output to writer", e))?;
         }
 
         spawn.handle.wait()
@@ -784,10 +777,8 @@ impl Pipeline {
         // Handle stderr output in current thread
         if let Some(stderr) = spawn.stderr {
             use std::io::copy;
-            copy(&mut BufReader::new(stderr), &mut writer).map_err(|e| Error {
-                message: "Failed to copy pipeline stderr to writer".to_string(),
-                source: Some(e),
-            })?;
+            copy(&mut BufReader::new(stderr), &mut writer)
+                .map_err(|e| Error::io("Failed to copy pipeline stderr to writer", e))?;
         }
 
         spawn.handle.wait()
@@ -892,10 +883,8 @@ impl Pipeline {
             if let Some(stdout) = spawn.stdout {
                 let mut output = Vec::new();
                 let mut reader = BufReader::new(stdout);
-                reader.read_to_end(&mut output).map_err(|e| Error {
-                    message: "Failed to read stdout".to_string(),
-                    source: Some(e),
-                })?;
+                reader.read_to_end(&mut output)
+                    .map_err(|e| Error::io("Failed to read stdout", e))?;
 
                 // Wait for input thread to complete if exists
                 if let Some(handle) = input_handle {
@@ -994,9 +983,11 @@ impl Pipeline {
             std_cmd.stdout(Stdio::inherit());
             std_cmd.stderr(Stdio::inherit());
 
-            let mut child = std_cmd.spawn().map_err(|e| Error {
-                message: format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
-                source: Some(e),
+            let mut child = std_cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!("Failed to spawn command: {}", cmd.program.to_string_lossy()),
+                    e,
+                )
             })?;
 
             let stdin = child.stdin.take();
@@ -1042,30 +1033,23 @@ impl Pipeline {
                 let next_pipe_mode = self.connections[i + 1].1;
                 match next_pipe_mode {
                     PipeMode::Stdout => {
-                        let (reader, writer) = std::io::pipe().map_err(|e| Error {
-                            message: "Failed to create stdout pipe".to_string(),
-                            source: Some(e),
-                        })?;
+                        let (reader, writer) = std::io::pipe()
+                            .map_err(|e| Error::io("Failed to create stdout pipe", e))?;
                         cmd.stdout(Stdio::from(writer));
                         prev_reader = Some(reader);
                     }
                     PipeMode::Stderr => {
-                        let (reader, writer) = std::io::pipe().map_err(|e| Error {
-                            message: "Failed to create stderr pipe".to_string(),
-                            source: Some(e),
-                        })?;
+                        let (reader, writer) = std::io::pipe()
+                            .map_err(|e| Error::io("Failed to create stderr pipe", e))?;
                         cmd.stderr(Stdio::from(writer));
                         prev_reader = Some(reader);
                     }
                     PipeMode::Both => {
-                        let (reader, writer) = std::io::pipe().map_err(|e| Error {
-                            message: "Failed to create combined pipe".to_string(),
-                            source: Some(e),
-                        })?;
-                        let writer_clone = writer.try_clone().map_err(|e| Error {
-                            message: "Failed to clone pipe writer".to_string(),
-                            source: Some(e),
-                        })?;
+                        let (reader, writer) = std::io::pipe()
+                            .map_err(|e| Error::io("Failed to create combined pipe", e))?;
+                        let writer_clone = writer
+                            .try_clone()
+                            .map_err(|e| Error::io("Failed to clone pipe writer", e))?;
                         cmd.stdout(Stdio::from(writer));
                         cmd.stderr(Stdio::from(writer_clone));
                         prev_reader = Some(reader);
@@ -1073,12 +1057,14 @@ impl Pipeline {
                 }
             }
 
-            let mut child = cmd.spawn().map_err(|e| Error {
-                message: format!(
-                    "Failed to spawn command: {}",
-                    cmd_def.program.to_string_lossy()
-                ),
-                source: Some(e),
+            let mut child = cmd.spawn().map_err(|e| {
+                Error::io(
+                    &format!(
+                        "Failed to spawn command: {}",
+                        cmd_def.program.to_string_lossy()
+                    ),
+                    e,
+                )
             })?;
 
             // Store stdin of first command for potential input
